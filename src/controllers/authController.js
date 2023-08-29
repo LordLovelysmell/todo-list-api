@@ -3,47 +3,30 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
 const catchAsync = require("../utils/catchAsync");
+const AppError = require("../utils/appError");
 const saltRounds = 10;
 
 exports.signUp = catchAsync(async (req, res, next) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return res.status(400).json({
-      status: "fail",
-      data: {
-        message: "Username and password were not provided.",
-      },
-    });
+    return next(new AppError("Username and password were not provided.", 400));
   }
 
   if (username.length < 4) {
-    return res.status(400).json({
-      status: "fail",
-      data: {
-        username: "Username must have atleast 4 symbols.",
-      },
-    });
+    return next(new AppError("Username and password were not provided.", 400));
   }
 
   if (password.length < 8) {
-    return res.status(400).json({
-      status: "fail",
-      data: {
-        password: "Password must have atleast 8 symbols.",
-      },
-    });
+    return next(new AppError("Password must have atleast 8 symbols.", 400));
   }
 
   const user = await User.find({ username });
 
   if (user.length) {
-    return res.status(409).json({
-      status: "fail",
-      data: {
-        username: `User with username '${username}' is already exist.`,
-      },
-    });
+    return next(
+      new AppError(`User with username '${username}' is already exist.`, 409)
+    );
   }
 
   const hash = await bcrypt.hash(password, saltRounds);
@@ -67,51 +50,26 @@ exports.signIn = catchAsync(async (req, res, next) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return res.status(400).json({
-      status: "fail",
-      data: {
-        message: "Username and password were not provided.",
-      },
-    });
+    return next(new AppError("Username and password were not provided.", 400));
   }
 
   if (username.length < 4) {
-    return res.status(400).json({
-      status: "fail",
-      data: {
-        username: "Username must have atleast 4 symbols.",
-      },
-    });
+    return next(new AppError("Username and password were not provided.", 400));
   }
 
   if (password.length < 8) {
-    return res.status(400).json({
-      status: "fail",
-      data: {
-        password: "Password must have atleast 8 symbols.",
-      },
-    });
+    return next(new AppError("Password must have atleast 8 symbols.", 400));
   }
 
   const user = await User.findOne({ username });
 
   if (!user) {
-    return res.status(400).json({
-      status: "fail",
-      data: {
-        message: "The username or password is incorrect.",
-      },
-    });
+    return next(new AppError("The username or password is incorrect.", 400));
   }
 
   bcrypt.compare(password, user.password, (err, result) => {
     if (!result) {
-      return res.status(400).json({
-        status: "fail",
-        data: {
-          message: "The username or password is incorrect.",
-        },
-      });
+      return next(new AppError("The username or password is incorrect.", 400));
     }
 
     const token = generateAccessToken({ username, id: user._id });
@@ -134,26 +92,18 @@ exports.refreshToken = catchAsync(async (req, res, next) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
-    return res.status(400).json({
-      status: "fail",
-      data: {
-        refreshToken: "Refresh token was not provided.",
-      },
-    });
+    return next(new AppError("Refresh token was not provided.", 400));
   }
 
   jwt.verify(
     refreshToken,
     process.env.REFRESH_TOKEN_SECRET,
-    async (err, { username }) => {
-      if (err) {
-        return res.status(400).json({
-          status: "fail",
-          data: {
-            message: "Invalid refresh token.",
-          },
-        });
+    async (err, decoded) => {
+      if (err || !decoded) {
+        return next(new AppError("Invalid refresh token.", 400));
       }
+
+      const { username } = decoded;
 
       const user = await User.findOne({ username });
 
