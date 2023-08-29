@@ -1,9 +1,10 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const User = require("../models/User");
+const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
+
 const saltRounds = 10;
 
 exports.signUp = catchAsync(async (req, res, next) => {
@@ -21,7 +22,7 @@ exports.signUp = catchAsync(async (req, res, next) => {
     return next(new AppError("Password must have atleast 8 symbols.", 400));
   }
 
-  const user = await User.find({ username });
+  const user = await User.findOne({ username });
 
   if (user.length) {
     return next(
@@ -61,7 +62,7 @@ exports.signIn = catchAsync(async (req, res, next) => {
     return next(new AppError("Password must have atleast 8 symbols.", 400));
   }
 
-  const user = await User.findOne({ username });
+  const user = await User.findOne({ username }).select("+password");
 
   if (!user) {
     return next(new AppError("The username or password is incorrect.", 400));
@@ -128,5 +129,7 @@ exports.refreshToken = catchAsync(async (req, res, next) => {
 });
 
 function generateAccessToken(user) {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "10m" });
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN,
+  });
 }

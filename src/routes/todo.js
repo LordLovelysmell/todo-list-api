@@ -1,36 +1,21 @@
 const express = require("express");
-const router = express.Router();
+
 const authenticateAccessToken = require("../middleware/authenticateAccessToken");
-const Todo = require("../models/Todo");
+const todoController = require("../controllers/todoController");
+
+const router = express.Router();
 
 router.all("*", authenticateAccessToken);
 
-router.get("/", async (req, res) => {
-  const todos = await Todo.find();
+router
+  .route("/")
+  .get(todoController.getAllTodos)
+  .post(todoController.createTodo);
 
-  return res.status(200).json({
-    status: "success",
-    data: {
-      todos,
-    },
-  });
-});
-
-router.post("/", async (req, res) => {
-  const { title, description, status } = req.body;
-
-  const todo = new Todo({
-    title,
-    description,
-    status,
-  });
-
-  return res.status(201).json({
-    status: "success",
-    data: {
-      todo,
-    },
-  });
-});
+// router
+//   .route("/:id")
+//   .get(todoController.getAllTodos)
+//   .patch(todoController.updateTodo)
+//   .delete(todoController.deleteTodo);
 
 module.exports = router;

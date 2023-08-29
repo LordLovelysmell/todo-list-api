@@ -4,14 +4,15 @@ const TodoSchema = mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: [true, "Title is required."],
     },
     description: {
       type: String,
-      required: true,
+      default: "",
     },
     status: {
       type: String,
+      default: "Backlog",
     },
   },
   { timestamps: true }
