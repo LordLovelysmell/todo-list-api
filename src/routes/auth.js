@@ -73,48 +73,39 @@ router.post("/sign-up", async (req, res) => {
 });
 
 router.post("/sign-in", async (req, res) => {
-  const { username, password } = req.body;
+  try {
+    const { username, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({
-      status: "fail",
-      data: {
-        message: "Username and password were not provided.",
-      },
-    });
-  }
+    if (!username || !password) {
+      return res.status(400).json({
+        status: "fail",
+        data: {
+          message: "Username and password were not provided.",
+        },
+      });
+    }
 
-  if (username.length < 4) {
-    return res.status(400).json({
-      status: "fail",
-      data: {
-        username: "Username must have atleast 4 symbols.",
-      },
-    });
-  }
+    if (username.length < 4) {
+      return res.status(400).json({
+        status: "fail",
+        data: {
+          username: "Username must have atleast 4 symbols.",
+        },
+      });
+    }
 
-  if (password.length < 8) {
-    return res.status(400).json({
-      status: "fail",
-      data: {
-        password: "Password must have atleast 8 symbols.",
-      },
-    });
-  }
+    if (password.length < 8) {
+      return res.status(400).json({
+        status: "fail",
+        data: {
+          password: "Password must have atleast 8 symbols.",
+        },
+      });
+    }
 
-  const user = await User.findOne({ username });
+    const user = await User.findOne({ username });
 
-  if (!user) {
-    return res.status(400).json({
-      status: "fail",
-      data: {
-        message: "The username or password is incorrect.",
-      },
-    });
-  }
-
-  bcrypt.compare(password, user.password, (err, result) => {
-    if (!result) {
+    if (!user) {
       return res.status(400).json({
         status: "fail",
         data: {
@@ -123,53 +114,17 @@ router.post("/sign-in", async (req, res) => {
       });
     }
 
-    const token = generateAccessToken({ username, id: user._id });
-    const refreshToken = jwt.sign(
-      { username },
-      process.env.REFRESH_TOKEN_SECRET
-    );
-
-    return res.status(200).json({
-      status: "success",
-      data: {
-        token,
-        refreshToken,
-      },
-    });
-  });
-});
-
-router.post("/token/refresh", async (req, res) => {
-  const { refreshToken } = req.body;
-
-  if (!refreshToken) {
-    return res.status(400).json({
-      status: "fail",
-      data: {
-        refreshToken: "Refresh token was not provided.",
-      },
-    });
-  }
-
-  jwt.verify(
-    refreshToken,
-    process.env.REFRESH_TOKEN_SECRET,
-    async (err, { username }) => {
-      if (err) {
+    bcrypt.compare(password, user.password, (err, result) => {
+      if (!result) {
         return res.status(400).json({
           status: "fail",
           data: {
-            message: "Invalid refresh token.",
+            message: "The username or password is incorrect.",
           },
         });
       }
 
-      const user = await User.findOne({ username });
-
-      const token = generateAccessToken({
-        username,
-        id: user._id,
-      });
+      const token = generateAccessToken({ username, id: user._id });
       const refreshToken = jwt.sign(
         { username },
         process.env.REFRESH_TOKEN_SECRET
@@ -182,8 +137,63 @@ router.post("/token/refresh", async (req, res) => {
           refreshToken,
         },
       });
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({
+      status: "fail",
+      data: null,
+    });
+  }
+});
+
+router.post("/token/refresh", async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(400).json({
+        status: "fail",
+        data: {
+          refreshToken: "Refresh token was not provided.",
+        },
+      });
     }
-  );
+
+    jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET,
+      async (err, { username }) => {
+        if (err) {
+          return res.status(400).json({
+            status: "fail",
+            data: {
+              message: "Invalid refresh token.",
+            },
+          });
+        }
+
+        const user = await User.findOne({ username });
+
+        const token = generateAccessToken({
+          username,
+          id: user._id,
+        });
+        const refreshToken = jwt.sign(
+          { username },
+          process.env.REFRESH_TOKEN_SECRET
+        );
+
+        return res.status(200).json({
+          status: "success",
+          data: {
+            token,
+            refreshToken,
+          },
+        });
+      }
+    );
+  } catch (err) {}
 });
 
 function generateAccessToken(user) {

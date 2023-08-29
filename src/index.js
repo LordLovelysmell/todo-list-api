@@ -6,6 +6,8 @@ const mongoose = require("mongoose");
 const mongoSanitizer = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 
+const AppError = require("./utils/appError");
+const globalErrorHandler = require("./middleware/globalErrorHandler");
 const authRoutes = require("./routes/auth");
 const todoRoutes = require("./routes/todo");
 
@@ -29,20 +31,9 @@ app.use(`/${process.env.API_VERSION}/todos`, todoRoutes);
 })();
 
 app.all("*", (req, res, next) => {
-  const err = new Error(`${req.originalUrl} cannot be found.`);
-  err.status = "fail";
-  err.statusCode = 404;
-
-  next(err);
+  next(new AppError(`${req.originalUrl} cannot be found.`, 404));
 });
 
-app.use((err, req, res, next) => {
-  err.statusCode = err.statusCode || 500;
-  err.status = err.status || "error";
-  res.status(err.statusCode).json({
-    status: err.status,
-    message: err.message,
-  });
-});
+app.use(globalErrorHandler);
 
 app.listen(3000, () => console.log("Listening on port 3000..."));
