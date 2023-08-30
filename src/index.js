@@ -11,8 +11,8 @@ const xss = require("xss-clean");
 
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./middleware/globalErrorHandler");
-const authRoutes = require("./routes/auth");
-const todoRoutes = require("./routes/todo");
+const authRoutes = require("./routes/authRoutes");
+const todoRoutes = require("./routes/todoRoutes");
 
 const app = express();
 
