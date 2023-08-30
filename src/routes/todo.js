@@ -12,10 +12,10 @@ router
   .get(todoController.getAllTodos)
   .post(todoController.createTodo);
 
-// router
-//   .route("/:id")
-//   .get(todoController.getAllTodos)
-//   .patch(todoController.updateTodo)
-//   .delete(todoController.deleteTodo);
+router
+  .route("/:id")
+  .get(todoController.getTodo)
+  .patch(todoController.updateTodo)
+  .delete(todoController.deleteTodo);
 
 module.exports = router;

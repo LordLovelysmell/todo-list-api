@@ -1,11 +1,10 @@
+const { promisify } = require("util");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
-
-const saltRounds = 10;
 
 exports.signUp = catchAsync(async (req, res, next) => {
   const { username, password } = req.body;
@@ -24,20 +23,16 @@ exports.signUp = catchAsync(async (req, res, next) => {
 
   const user = await User.findOne({ username });
 
-  if (user.length) {
+  if (user) {
     return next(
       new AppError(`User with username '${username}' is already exist.`, 409)
     );
   }
 
-  const hash = await bcrypt.hash(password, saltRounds);
-
-  const newUser = new User({
+  await User.create({
     username,
-    password: hash,
+    password,
   });
-
-  await newUser.save();
 
   res.status(201).json({
     status: "success",
@@ -55,7 +50,7 @@ exports.signIn = catchAsync(async (req, res, next) => {
   }
 
   if (username.length < 4) {
-    return next(new AppError("Username and password were not provided.", 400));
+    return next(new AppError("Username must have atleast 4 symbols.", 400));
   }
 
   if (password.length < 8) {
@@ -64,28 +59,22 @@ exports.signIn = catchAsync(async (req, res, next) => {
 
   const user = await User.findOne({ username }).select("+password");
 
-  if (!user) {
+  if (!user || !(await user.isPasswordCorrect(password, user.password))) {
     return next(new AppError("The username or password is incorrect.", 400));
   }
 
-  bcrypt.compare(password, user.password, (err, result) => {
-    if (!result) {
-      return next(new AppError("The username or password is incorrect.", 400));
-    }
+  const token = await generateAccessToken({ username, id: user._id });
+  const refreshToken = await promisify(jwt.sign)(
+    { username },
+    process.env.REFRESH_TOKEN_SECRET
+  );
 
-    const token = generateAccessToken({ username, id: user._id });
-    const refreshToken = jwt.sign(
-      { username },
-      process.env.REFRESH_TOKEN_SECRET
-    );
-
-    return res.status(200).json({
-      status: "success",
-      data: {
-        token,
-        refreshToken,
-      },
-    });
+  return res.status(200).json({
+    status: "success",
+    data: {
+      token,
+      refreshToken,
+    },
   });
 });
 
@@ -96,40 +85,39 @@ exports.refreshToken = catchAsync(async (req, res, next) => {
     return next(new AppError("Refresh token was not provided.", 400));
   }
 
-  jwt.verify(
+  const decoded = await promisify(jwt.verify)(
     refreshToken,
-    process.env.REFRESH_TOKEN_SECRET,
-    async (err, decoded) => {
-      if (err || !decoded) {
-        return next(new AppError("Invalid refresh token.", 400));
-      }
-
-      const { username } = decoded;
-
-      const user = await User.findOne({ username });
-
-      const token = generateAccessToken({
-        username,
-        id: user._id,
-      });
-      const refreshToken = jwt.sign(
-        { username },
-        process.env.REFRESH_TOKEN_SECRET
-      );
-
-      return res.status(200).json({
-        status: "success",
-        data: {
-          token,
-          refreshToken,
-        },
-      });
-    }
+    process.env.REFRESH_TOKEN_SECRET
   );
+
+  if (!decoded) {
+    return next(new AppError("Invalid refresh token.", 400));
+  }
+
+  const { username } = decoded;
+
+  const user = await User.findOne({ username });
+
+  const token = await generateAccessToken({
+    username,
+    id: user._id,
+  });
+  const newRefreshToken = await promisify(jwt.sign)(
+    { username },
+    process.env.REFRESH_TOKEN_SECRET
+  );
+
+  return res.status(200).json({
+    status: "success",
+    data: {
+      token,
+      refreshToken: newRefreshToken,
+    },
+  });
 });
 
-function generateAccessToken(user) {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+async function generateAccessToken(user) {
+  return await promisify(jwt.sign)(user, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN,
   });
 }

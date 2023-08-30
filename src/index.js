@@ -1,6 +1,9 @@
-require("dotenv").config();
+const dotenv = require("dotenv");
+
+dotenv.config({ path: "./config.env" });
 
 const express = require("express");
+const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const mongoSanitizer = require("express-mongo-sanitize");
@@ -12,6 +15,11 @@ const authRoutes = require("./routes/auth");
 const todoRoutes = require("./routes/todo");
 
 const app = express();
+
+// Development logging
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
 
 app.use(bodyParser.json());
 
