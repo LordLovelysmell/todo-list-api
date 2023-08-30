@@ -93,10 +93,17 @@ exports.getTodo = catchAsync(async (req, res, next) => {
 });
 
 exports.updateTodo = catchAsync(async (req, res, next) => {
-  const todo = await Todo.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const todo = await Todo.findOneAndUpdate(
+    {
+      _id: req.params.id,
+      createdBy: req.user.id,
+    },
+    req.body,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 
   if (!todo) {
     return next(new AppError("No todo found with that ID", 404));
@@ -111,7 +118,10 @@ exports.updateTodo = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteTodo = catchAsync(async (req, res, next) => {
-  const todo = await Todo.findByIdAndDelete(req.params.id);
+  const todo = await Todo.findOneAndDelete({
+    _id: req.params.id,
+    createdBy: req.user.id,
+  });
 
   if (!todo) {
     return next(new AppError("No todo found with that ID", 404));
