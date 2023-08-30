@@ -26,8 +26,8 @@ app.use(bodyParser.json());
 // Data sanitization against NoSQL query injection
 app.use(mongoSanitizer());
 
-app.use(`/${process.env.API_VERSION}/auth`, authRoutes);
-app.use(`/${process.env.API_VERSION}/todos`, todoRoutes);
+app.use(`/api/${process.env.API_VERSION}/auth`, authRoutes);
+app.use(`/api/${process.env.API_VERSION}/todos`, todoRoutes);
 
 (async () => {
   try {
