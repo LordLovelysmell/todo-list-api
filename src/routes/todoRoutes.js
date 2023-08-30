@@ -10,7 +10,7 @@ router.all("*", authenticateAccessToken);
 router
   .route("/")
   .get(todoController.getAllTodos)
-  .post(todoController.createTodo);
+  .post(todoController.uploadTodoImage, todoController.createTodo);
 
 router
   .route("/:id")

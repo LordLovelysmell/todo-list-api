@@ -14,6 +14,10 @@ const TodoSchema = mongoose.Schema(
       type: String,
       default: "backlog",
     },
+    image: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

@@ -1,6 +1,33 @@
+const multer = require("multer");
+
 const Todo = require("../models/todoModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
+
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/image/todos");
+  },
+  filename: (req, file, cb) => {
+    const ext = file.mimetype.split("/")[1];
+    cb(null, `todo-${req.user.id}-${Date.now()}.${ext}`);
+  },
+});
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new AppError("Not an image. Please upload only images.", 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+exports.uploadTodoImage = upload.single("image");
 
 exports.getAllTodos = catchAsync(async (req, res, next) => {
   const queryObj = { ...req.query };
@@ -15,7 +42,6 @@ exports.getAllTodos = catchAsync(async (req, res, next) => {
   // Field limiting
   if (req.query.fields) {
     const fields = req.query.fields.split(",").join(" ");
-    console.log(typeof fields);
     query = query.select(fields);
   } else {
     query = query.select("-__v");
@@ -46,6 +72,10 @@ exports.getAllTodos = catchAsync(async (req, res, next) => {
 });
 
 exports.createTodo = catchAsync(async (req, res, next) => {
+  if (req.file) {
+    req.body.image = req.file.filename;
+  }
+
   const newTodo = await Todo.create(req.body);
 
   return res.status(201).json({
