@@ -18,6 +18,7 @@ const AppError = require("./utils/appError");
 const globalErrorHandler = require("./middleware/globalErrorHandler");
 const authRoutes = require("./routes/authRoutes");
 const todoRoutes = require("./routes/todoRoutes");
+const commentRoutes = require("./routes/commentRoutes");
 
 const app = express();
 
@@ -55,6 +56,10 @@ app.use(
 
 app.use(`/api/${process.env.API_VERSION}/auth`, authRoutes);
 app.use(`/api/${process.env.API_VERSION}/todos`, todoRoutes);
+app.use(
+  `/api/${process.env.API_VERSION}/todos/:todoId/comments`,
+  commentRoutes
+);
 
 (async () => {
   try {

@@ -1,6 +1,7 @@
 const multer = require("multer");
 
 const Todo = require("../models/todoModel");
+const Comment = require("../models/commentModel");
 const Attachment = require("../models/attachmentModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
@@ -81,7 +82,9 @@ exports.getTodo = catchAsync(async (req, res, next) => {
   });
 
   if (!todo) {
-    return next(new AppError(`Todo with id "${req.params.id}" was not found.`));
+    return next(
+      new AppError(`Todo with id "${req.params.id}" was not found.`, 404)
+    );
   }
 
   return res.status(201).json({
@@ -126,6 +129,11 @@ exports.deleteTodo = catchAsync(async (req, res, next) => {
   if (!todo) {
     return next(new AppError("No todo found with that ID", 404));
   }
+
+  // To delete linked comments
+  await Comment.deleteMany({
+    todoId: todo.id,
+  });
 
   res.status(204).json({
     status: "success",
