@@ -12,7 +12,7 @@ const TodoSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      default: "Backlog",
+      default: "backlog",
     },
   },
   { timestamps: true }

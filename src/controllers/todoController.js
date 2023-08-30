@@ -3,7 +3,39 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 
 exports.getAllTodos = catchAsync(async (req, res, next) => {
-  const todos = await Todo.find();
+  const queryObj = { ...req.query };
+  const excludedFields = ["page", "sort", "limit", "fields"];
+  excludedFields.forEach((el) => delete queryObj[el]);
+
+  let query = Todo.find(queryObj);
+
+  // Basic sorting
+  query = query.sort("-createdAt");
+
+  // Field limiting
+  if (req.query.fields) {
+    const fields = req.query.fields.split(",").join(" ");
+    console.log(typeof fields);
+    query = query.select(fields);
+  } else {
+    query = query.select("-__v");
+  }
+
+  // Pagination
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 100;
+  const skip = (page - 1) * limit;
+
+  query = query.skip(skip).limit(limit);
+
+  if (req.query.page) {
+    const numTodos = await Todo.countDocuments();
+    if (skip >= numTodos) {
+      next(new AppError("This page does not exist."));
+    }
+  }
+
+  const todos = await query;
 
   return res.status(200).json({
     status: "success",
