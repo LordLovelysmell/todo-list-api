@@ -33,7 +33,7 @@ exports.getCommentsForTodo = catchAsync(async (req, res, next) => {
 exports.getCommentById = catchAsync(async (req, res, next) => {
   const comment = await Comment.findById(req.params.commentId);
 
-  if (!comment) {
+  if (!comment || !req.todo._id.equals(comment.todoId)) {
     return next(new AppError("No comment found with that ID", 404));
   }
 
@@ -59,7 +59,7 @@ exports.updateComment = catchAsync(async (req, res, next) => {
     }
   );
 
-  if (!comment) {
+  if (!comment || !req.todo._id.equals(comment.todoId)) {
     return next(new AppError("No comment found with that ID", 404));
   }
 
@@ -76,7 +76,7 @@ exports.deleteComment = catchAsync(async (req, res, next) => {
     _id: req.params.commentId,
   });
 
-  if (!comment) {
+  if (!comment || !req.todo._id.equals(comment.todoId)) {
     return next(new AppError("No comment found with that ID", 404));
   }
 
