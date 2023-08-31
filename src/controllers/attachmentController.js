@@ -7,13 +7,7 @@ const Attachment = require("../models/attachmentModel");
 const Todo = require("../models/todoModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
-
-// Wrap fs.existsSync in promise to not block the stream
-function existsAsync(path) {
-  return new Promise((resolve) => {
-    resolve(fs.existsSync(path));
-  });
-}
+const existsAsync = require("../utils/execAsync");
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {

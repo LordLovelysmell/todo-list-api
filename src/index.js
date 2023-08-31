@@ -73,7 +73,7 @@ app.use(
     await mongoose.connect(process.env.DATABASE_LOCAL);
     console.log("Successfully connected to database.");
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 })();
 

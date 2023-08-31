@@ -1,6 +1,12 @@
+const fs = require("fs");
+const path = require("path");
+const { promisify } = require("util");
+
 const Todo = require("../models/todoModel");
 const Comment = require("../models/commentModel");
+const Attachment = require("../models/attachmentModel");
 const catchAsync = require("../utils/catchAsync");
+const existsAsync = require("../utils/execAsync");
 const AppError = require("../utils/appError");
 const ApiFeatures = require("../utils/apiFeatures");
 
@@ -98,6 +104,28 @@ exports.deleteTodo = catchAsync(async (req, res, next) => {
   // To delete linked comments
   await Comment.deleteMany({
     todoId: todo.id,
+  });
+
+  const attachments = await Attachment.find({
+    todoId: req.params.id,
+  });
+
+  // Delete every attachment linked to Todo
+  attachments.forEach(async (at) => {
+    const imagePath = path.join(
+      __dirname,
+      "./../../public/img/todos",
+      `${at.filename}`
+    );
+
+    // Delete attachment image from file system if it exist
+    if (await existsAsync(imagePath)) {
+      await promisify(fs.unlink)(imagePath);
+    }
+  });
+
+  await Attachment.deleteMany({
+    todoId: req.params.id,
   });
 
   res.status(204).json({

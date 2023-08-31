@@ -1,0 +1,21 @@
+version: "3"
+services:
+  mongo:
+    image: mongo
+    container_name: mongo-container
+    networks:
+      - my-network
+
+  api:
+    build: .
+    container_name: api-container
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+    env_file:
+      - config.env
+    networks:
+      - my-network
+networks:
+  my-network:
