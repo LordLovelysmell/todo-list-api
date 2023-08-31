@@ -1,36 +1,8 @@
-const multer = require("multer");
-
 const Todo = require("../models/todoModel");
 const Comment = require("../models/commentModel");
-const Attachment = require("../models/attachmentModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const ApiFeatures = require("../utils/apiFeatures");
-
-const multerStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/image/todos");
-  },
-  filename: (req, file, cb) => {
-    const ext = file.mimetype.split("/")[1];
-    cb(null, `todo-${req.user.id}-${Date.now()}.${ext}`);
-  },
-});
-
-const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image")) {
-    cb(null, true);
-  } else {
-    cb(new AppError("Not an image. Please upload only images.", 400), false);
-  }
-};
-
-const upload = multer({
-  storage: multerStorage,
-  fileFilter: multerFilter,
-});
-
-exports.uploadTodoImage = upload.single("image");
 
 exports.getAllTodos = catchAsync(async (req, res, next) => {
   const queryObj = { ...req.query };
@@ -59,13 +31,6 @@ exports.createTodo = catchAsync(async (req, res, next) => {
     ...req.body,
     createdBy: req.user.id,
   });
-
-  if (req.file) {
-    await Attachment.create({
-      todoId: newTodo.id,
-      filename: req.file.filename,
-    });
-  }
 
   return res.status(201).json({
     status: "success",

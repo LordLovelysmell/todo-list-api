@@ -19,8 +19,11 @@ const globalErrorHandler = require("./middleware/globalErrorHandler");
 const authRoutes = require("./routes/authRoutes");
 const todoRoutes = require("./routes/todoRoutes");
 const commentRoutes = require("./routes/commentRoutes");
+const attachmentRoutes = require("./routes/attachmentRoutes");
 
 const app = express();
+
+app.use(express.static(`${__dirname}/../public`));
 
 // GLOBAL MIDDLEWARES
 // Set security HTTP headers
@@ -59,6 +62,10 @@ app.use(`/api/${process.env.API_VERSION}/todos`, todoRoutes);
 app.use(
   `/api/${process.env.API_VERSION}/todos/:todoId/comments`,
   commentRoutes
+);
+app.use(
+  `/api/${process.env.API_VERSION}/todos/:todoId/attachments`,
+  attachmentRoutes
 );
 
 (async () => {

@@ -57,6 +57,6 @@ module.exports = function (err, req, res, next) {
       error = handleTokenExpired(error);
     }
 
-    sendErrorProd(error, res);
+    sendErrorProd(err, res); // TODO: fix bad errors on prod
   }
 };
