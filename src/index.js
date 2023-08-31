@@ -70,8 +70,8 @@ app.use(
 
 (async () => {
   try {
-    await mongoose.connect("mongodb://127.0.0.1:27017/todo");
-    console.log("Successefully connected to database.");
+    await mongoose.connect(process.env.DATABASE_LOCAL);
+    console.log("Successfully connected to database.");
   } catch (error) {
     console.log(error);
   }
@@ -83,4 +83,5 @@ app.all("*", (req, res, next) => {
 
 app.use(globalErrorHandler);
 
-app.listen(3000, () => console.log("Listening on port 3000..."));
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Listening on port ${port}...`));
