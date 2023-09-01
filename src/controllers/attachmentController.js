@@ -34,20 +34,6 @@ const upload = multer({
 
 exports.uploadTodoImage = upload.single("image");
 
-exports.verifyingMiddleware = catchAsync(async (req, res, next) => {
-  const todoId = req.params.todoId;
-  const todo = await Todo.findById(todoId);
-
-  // Check if todo with todoId exists and user created it by himself
-  if (!todo || !todo.createdBy.equals(req.user.id)) {
-    return next(new AppError(`Todo with id "${todoId}" was not found.`, 404));
-  }
-
-  req.todo = todo;
-
-  next();
-});
-
 exports.createAttachment = catchAsync(async (req, res, next) => {
   if (!req.file) {
     next(new AppError("Attachment was not provided.", 400));

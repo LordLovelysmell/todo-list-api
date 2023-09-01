@@ -1,9 +1,10 @@
 const express = require("express");
 const commentController = require("../controllers/commentController");
+const accessVerifyingMiddleware = require("../middleware/accessVerifyingMiddleware");
 
 const router = express.Router({ mergeParams: true });
 
-router.use(commentController.verifyingMiddleware);
+router.use(accessVerifyingMiddleware);
 
 router
   .post("/", commentController.createComment)

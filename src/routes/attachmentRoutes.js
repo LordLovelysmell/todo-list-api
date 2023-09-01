@@ -1,5 +1,6 @@
 const express = require("express");
 const attachmentController = require("../controllers/attachmentController");
+const accessVerifyingMiddleware = require("../middleware/accessVerifyingMiddleware");
 
 const router = express.Router({ mergeParams: true });
 
@@ -7,24 +8,24 @@ router
   .post(
     "/",
     attachmentController.uploadTodoImage,
-    attachmentController.verifyingMiddleware,
+    accessVerifyingMiddleware,
     attachmentController.createAttachment
   )
   .get(
     "/",
-    attachmentController.verifyingMiddleware,
+    accessVerifyingMiddleware,
     attachmentController.getAttachmentsForTodo
   );
 
 router
   .get(
     "/:id",
-    attachmentController.verifyingMiddleware,
+    accessVerifyingMiddleware,
     attachmentController.getAttachmentById
   )
   .delete(
     "/:id",
-    attachmentController.verifyingMiddleware,
+    accessVerifyingMiddleware,
     attachmentController.deleteAttachment
   );
 
