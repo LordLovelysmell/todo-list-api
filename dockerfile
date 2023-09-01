@@ -1,13 +1,17 @@
-FROM node:14
+FROM node:18-alpine
 
-WORKDIR /
+RUN apk --no-cache add make gcc g++ python3
 
+WORKDIR /usr/src/app
 COPY package*.json ./
+RUN npm install --frozen-lock-file
 
-RUN npm install
+RUN npm rebuild bcrypt --build-from-source
+
+RUN apk del make gcc g++ python3
 
 COPY . .
 
 EXPOSE 3000
 
-CMD ["node", "src/index.js"]
+CMD ["npm", "start"]
