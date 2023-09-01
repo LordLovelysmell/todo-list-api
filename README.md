@@ -60,7 +60,7 @@ The Postman collection completely mirroring all wokrkable endpoints.
 
 Images loaded using `/api/v1/todos/64f18bf743e197ab2f780cd8/attachments` endpoint are served at `/img/todos/IMAGE_FILENAME`.
 
-`IMAGE_FILENAME` is returned by endpoint above if loading was successful as `filename` property.
+`IMAGE_FILENAME` is returned by endpoint above as `filename` property if loading was successful.
 
 ## Testing
 
