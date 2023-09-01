@@ -54,6 +54,14 @@ Just import file named `api.postman_collection.json` located in root directory o
 
 You will also need to import [environment](env.postman_environment.json) for Postman to effectively interact with Todo List API. The environment is also in the project root.
 
+The Postman collection completely mirroring all wokrkable endpoints.
+
+## Todo List API Images
+
+Images loaded using `/api/v1/todos/64f18bf743e197ab2f780cd8/attachments` endpoint are served at `/img/todos/IMAGE_FILENAME`.
+
+`IMAGE_FILENAME` is returned by endpoint above if loading was successful.
+
 ## Testing
 
 1. Run tests:
