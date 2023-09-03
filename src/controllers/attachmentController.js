@@ -7,7 +7,7 @@ const Attachment = require("../models/attachmentModel");
 const Todo = require("../models/todoModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
-const existsAsync = require("../utils/execAsync");
+const existsAsync = require("../utils/existsAsync");
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {

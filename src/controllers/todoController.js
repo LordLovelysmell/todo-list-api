@@ -6,7 +6,7 @@ const Todo = require("../models/todoModel");
 const Comment = require("../models/commentModel");
 const Attachment = require("../models/attachmentModel");
 const catchAsync = require("../utils/catchAsync");
-const existsAsync = require("../utils/execAsync");
+const existsAsync = require("../utils/existsAsync");
 const AppError = require("../utils/appError");
 const ApiFeatures = require("../utils/apiFeatures");
 
@@ -58,7 +58,7 @@ exports.getTodo = catchAsync(async (req, res, next) => {
     );
   }
 
-  return res.status(201).json({
+  return res.status(200).json({
     status: "success",
     data: {
       todo: todo,
@@ -83,7 +83,7 @@ exports.updateTodo = catchAsync(async (req, res, next) => {
     return next(new AppError("No todo found with that ID", 404));
   }
 
-  res.status(200).json({
+  return res.status(200).json({
     status: "success",
     data: {
       todo,
@@ -128,7 +128,7 @@ exports.deleteTodo = catchAsync(async (req, res, next) => {
     todoId: req.params.id,
   });
 
-  res.status(204).json({
+  return res.status(204).json({
     status: "success",
     data: null,
   });

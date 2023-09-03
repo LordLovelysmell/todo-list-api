@@ -13,7 +13,7 @@ exports.signUp = catchAsync(async (req, res, next) => {
   }
 
   if (username.length < 4) {
-    return next(new AppError("Username and password were not provided.", 400));
+    return next(new AppError("Username must have atleast 4 symbols.", 400));
   }
 
   if (password.length < 8) {
@@ -33,7 +33,7 @@ exports.signUp = catchAsync(async (req, res, next) => {
     password,
   });
 
-  res.status(201).json({
+  return res.status(201).json({
     status: "success",
     data: {
       message: "User has been successfully created.",
